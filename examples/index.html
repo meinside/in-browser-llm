@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>in-browser-llm example</title>
+    <style>
+      body { font-family: ui-monospace, monospace; max-width: 48rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+      progress { width: 100%; height: 1.2rem; }
+      textarea { width: 100%; font: inherit; }
+      #output { background: #f7f7f7; padding: 0.8rem; min-height: 6rem; white-space: pre-wrap; }
+      #reasoning-box { margin-bottom: 0.5rem; font-size: 0.9rem; }
+      #reasoning { background: #fdfaf2; padding: 0.6rem; white-space: pre-wrap; color: #555; }
+      #metrics { color: #555; font-size: 0.9rem; }
+      .no { color: #c02020; font-weight: bold; }
+      .warn { color: #b06000; }
+      button { font: inherit; padding: 0.4rem 1rem; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <h1>in-browser-llm</h1>
+
+    <p>
+      <label>
+        Runtime:
+        <select id="runtime">
+          <!-- Sizes measured with inspectModel(); they are examples, not tracked. -->
+          <option value="small">Qwen3.5-0.8B — text + tools (~450MB)</option>
+          <option value="mediapipe">gemma-4-E2B via MediaPipe — text (~1.9GB)</option>
+          <option value="mediapipe-mm">gemma-4-E2B via MediaPipe — image, KNOWN TO FAIL at generate (~1.9GB)</option>
+          <option value="mediapipe-audio">gemma-4-E2B via MediaPipe — audio, KNOWN TO FAIL at generate (~1.9GB)</option>
+          <option value="transformers">gemma-4-E2B — text + image + audio + tools (~3.2GB, Chrome only)</option>
+          <option value="vision">Qwen3-VL-2B — text + image (~1.3GB)</option>
+        </select>
+      </label>
+      <button id="check">Check compatibility</button>
+    </p>
+
+    <div id="verdict"></div>
+
+    <section id="loader" hidden>
+      <button id="load">Load model</button>
+      <p id="status"></p>
+      <progress id="progress" value="0" max="1" hidden></progress>
+    </section>
+
+    <section id="chat" hidden>
+      <p id="image-row" hidden>
+        <label>Image: <input type="file" id="image" accept="image/*" /></label>
+      </p>
+      <img id="preview" hidden alt="selected image" style="max-width: 16rem; display: block" />
+      <p id="audio-row" hidden>
+        <label>Audio: <input type="file" id="audio" accept="audio/*" /></label>
+        <small>resampled to 16kHz mono; the model uses the first 30 seconds</small>
+      </p>
+      <audio id="audio-preview" controls hidden></audio>
+      <textarea id="prompt" rows="3">Write a haiku about WebGPU.</textarea>
+      <p>
+        <button id="generate">Generate</button>
+        <label>
+          max tokens:
+          <input id="max-tokens" type="number" value="1024" min="16" step="128" style="width: 6rem" />
+        </label>
+        <label>
+          <input id="thinking" type="checkbox" /> thinking mode
+        </label>
+      </p>
+      <details id="reasoning-box" hidden>
+        <summary>reasoning (<span id="reasoning-len">0</span> chars)</summary>
+        <div id="reasoning"></div>
+      </details>
+      <div id="output"></div>
+      <p id="metrics"></p>
+      <div id="tool-row" hidden>
+        <hr />
+        <p>
+          <button id="tool-demo">Run tool-calling demo</button>
+          <small>three turns: the model asks for a tool, we answer, it replies</small>
+        </p>
+      </div>
+      <pre id="tool-output" style="white-space: pre-wrap"></pre>
+    </section>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

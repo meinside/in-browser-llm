@@ -1,0 +1,80 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'src-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Verify the tag, package.json, and README agree
+        # Two files pin a version: package.json and the import URL in README's Quick
+        # start example. Everything else writes vX.Y.Z. Checked BEFORE the build so
+        # a mismatch costs seconds, and checked at all because jsDelivr caches a tag
+        # permanently — shipping a README whose example points at a nonexistent version
+        # cannot be corrected in place, only superseded.
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#src-v}"
+
+          PKG=$(node -p 'require("./package.json").version')
+          if [ "$PKG" != "$VERSION" ]; then
+            echo "package.json is $PKG but the tag says $VERSION." >&2
+            exit 1
+          fi
+
+          URL="https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@v${VERSION}/dist/index.js"
+          if ! grep -qF "$URL" README.md; then
+            echo "README's usage example does not import $URL" >&2
+            grep -n 'cdn.jsdelivr.net/gh/.*dist/index.js' README.md >&2 || true
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+
+      - name: Verify build output exists
+        run: test -f dist/index.js && test -f dist/index.d.ts
+
+      - name: Verify peers were not inlined
+        # A bundled runtime would multiply the download size and defeat the
+        # peer-dependency design, so fail loudly rather than publish it.
+        run: |
+          if grep -q "onnxruntime" dist/*.js; then
+            echo "A peer dependency leaked into the bundle." >&2
+            exit 1
+          fi
+
+      - name: Commit dist and tag the release
+        run: |
+          set -euo pipefail
+          SRC_TAG="${GITHUB_REF_NAME}"
+          REL_TAG="${SRC_TAG#src-}"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # dist/ is gitignored so main stays clean; force-add it for the release only.
+          git add -f dist
+          git commit -m "build: ${REL_TAG}"
+
+          git tag "${REL_TAG}"
+          git push origin "${REL_TAG}"
+
+          echo "Published ${REL_TAG}"
+          echo "https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${REL_TAG}/dist/index.js"

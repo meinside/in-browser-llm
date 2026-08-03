@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+*.log
+
+# Local agent state. Excluded here rather than relying on a global gitignore, which
+# does not travel with a clone.
+.claude/
+
+# Build output. Committed only on release tags by the GitHub Action,
+# never from master — see CLAUDE.md "Distribution".
+dist/

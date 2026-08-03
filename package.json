@@ -1,0 +1,44 @@
+{
+  "name": "in-browser-llm",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "example": "vite examples"
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@mediapipe/tasks-genai": "^0.10.29"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": {
+      "optional": true
+    },
+    "@mediapipe/tasks-genai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@mediapipe/tasks-genai": "^0.10.29",
+    "@types/node": "^26.1.2",
+    "@webgpu/types": "^0.1.71",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}
