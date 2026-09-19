@@ -21,7 +21,7 @@
     "example": "vite examples"
   },
   "peerDependencies": {
-    "@huggingface/transformers": "^4.2.0",
+    "@huggingface/transformers": "^4.3.0",
     "@mediapipe/tasks-genai": "^0.10.29"
   },
   "peerDependenciesMeta": {
@@ -33,7 +33,7 @@
     }
   },
   "devDependencies": {
-    "@huggingface/transformers": "^4.2.0",
+    "@huggingface/transformers": "^4.3.0",
     "@mediapipe/tasks-genai": "^0.10.29",
     "@types/node": "^26.1.2",
     "@webgpu/types": "^0.1.71",
